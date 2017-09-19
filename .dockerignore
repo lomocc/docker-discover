@@ -1,0 +1,8 @@
+# 忽略的文件大部分项目只使用 dist 目录
+.editorconfig
+.eslintrc
+.gitignore
+.gitlab-ci.yml
+.git
+docker-compose.yml
+yarn.lock

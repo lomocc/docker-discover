@@ -1,0 +1,12 @@
+version: '3'
+services:
+  docker-discovery:
+    image: lomocc/docker-discovery
+    container_name: docker-discovery
+    privileged: true
+    build: .
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    network_mode: "bridge"

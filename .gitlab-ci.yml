@@ -1,0 +1,30 @@
+#image: node:latest
+stages:
+  - docker-build
+  - deploy
+
+cache:
+  paths:
+  - node_modules/
+
+docker build:
+  stage: docker-build
+  script:
+    - yarn --version
+    - yarn
+    - docker-compose build
+    - docker-compose push
+  tags:
+    - shell-build-test
+#  only:
+#    - master
+
+dev deploy:
+  stage: deploy
+  script:
+    - docker-compose pull
+    - docker-compose up -d
+  tags:
+    - shell-build-test
+#  only:
+#    - master
