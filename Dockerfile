@@ -1,11 +1,11 @@
 FROM lomocc/nginx-node
 
+RUN npm install
+
 COPY log /var/log/nginx
 
 WORKDIR /app
 
 COPY ./ ./
-
-RUN npm install
 
 CMD npm start
