@@ -34,6 +34,7 @@ function updateNginxConf() {
     containers.forEach(function (containerInfo) {
       var name = containerInfo.Names[0].substr(1);
       var virtualHost = (containerInfo.Labels.VIRTUAL_HOST || name).trim();
+      var port = (containerInfo.Labels.PORT || '80').trim();
       var indexSep = virtualHost.indexOf('/');
       var host;
       var path;
@@ -52,10 +53,10 @@ function updateNginxConf() {
       var networksInfo = getNetworks(containerInfo.NetworkSettings.Networks) || {IPAddress: ''};
       var ip = networksInfo.IPAddress;
       if(ip) {
-        containerMap[name] = {host, path, ip};
+        containerMap[name] = {host, path, ip, port};
       }else{
         // unserver
-        containerMap_unserver[name] = {host, path, ip};
+        containerMap_unserver[name] = {host, path, ip, port};
       }
     });
     var serverConfigMap = {};
@@ -83,7 +84,7 @@ server {
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-Host $host;
     proxy_set_header X-Forwarded-Server $host;
-    proxy_pass http://${info.ip}/;
+    proxy_pass http://${info.ip}:${info.port}/;
   }
 `);
     });
