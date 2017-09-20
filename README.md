@@ -9,7 +9,7 @@ Docker Web 容器管理
 ## 启动 Docker Manager
 
 ```
-docker run -itd -p 80:80 -v /var/run/docker.sock:/var/run/docker.sock:ro lomocc/docker-discovery
+docker run -itd -p 80:80 -v /var/run/docker.sock:/var/run/docker.sock:ro lomocc/discovery
 ```
 
 ## 启动项目

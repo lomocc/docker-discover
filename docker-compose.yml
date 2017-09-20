@@ -1,8 +1,8 @@
 version: '3'
 services:
-  docker-discovery:
-    image: lomocc/docker-discovery
-    container_name: docker-discovery
+  discovery:
+    image: lomocc/discovery
+    container_name: discovery
     privileged: true
     build: .
     ports:

@@ -1,5 +1,5 @@
 {
-  "name": "docker-discovery",
+  "name": "discovery",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
