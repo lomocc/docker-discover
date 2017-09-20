@@ -33,7 +33,7 @@ function updateNginxConf() {
     var containerMap_unserver = {};// 未启动的应用
     containers.forEach(function (containerInfo) {
       var name = containerInfo.Names[0].substr(1);
-      var virtualHost = (containerInfo.Labels.VIRTUAL_HOST || '').trim();
+      var virtualHost = (containerInfo.Labels.VIRTUAL_HOST || name).trim();
       var indexSep = virtualHost.indexOf('/');
       var host;
       var path;

@@ -1,21 +1,11 @@
 #image: node:latest
 stages:
-  - env
   - docker-build
   - deploy
 
 cache:
   paths:
   - node_modules/
-
-# °²×°ÒÀÀµ
-install:
-  stage: env
-  script:
-    - yarn --version
-    - yarn
-  tags:
-    - node-build
 
 docker build:
   stage: docker-build
