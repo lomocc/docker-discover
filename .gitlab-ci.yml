@@ -1,5 +1,6 @@
 #image: node:latest
 stages:
+  - env
   - docker-build
   - deploy
 
@@ -7,24 +8,31 @@ cache:
   paths:
   - node_modules/
 
-docker build:
-  stage: docker-build
+# °²×°ÒÀÀµ
+install:
+  stage: env
   script:
     - yarn --version
     - yarn
+  tags:
+    - node-build
+
+docker build:
+  stage: docker-build
+  script:
     - docker-compose build
     - docker-compose push
   tags:
-    - shell-build-test
+    - shell-build
 #  only:
 #    - master
 
-dev deploy:
-  stage: deploy
-  script:
-    - docker-compose pull
-    - docker-compose up -d
-  tags:
-    - shell-build-test
+#dev deploy:
+#  stage: deploy
+#  script:
+#    - docker-compose pull
+#    - docker-compose up -d
+#  tags:
+#    - deploy-dev
 #  only:
 #    - master
