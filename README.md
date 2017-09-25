@@ -1,25 +1,37 @@
-# Docker Manager (Web)
+# Docker Discovery (Web)
 
-Docker Web 容器管理
+Docker Web 容器转发管理
 
 ## 为什么用它
 
 解决多容器共享主机时的域名分配问题，启动容器后会 **自动** 扫描本机 Docker 容器，并写入 nginx 配置。
 
-## 启动 Docker Manager
+## 启动 Docker Discovery
 
 ```
 docker run -itd -p 80:80 -v /var/run/docker.sock:/var/run/docker.sock:ro lomocc/discovery
 ```
 
-## 启动项目
-
-* docker run:
+## 参数说明
+* network
 
 ```
-docker run -itd --label VIRTUAL_HOST=www.example.com/api example-image
+--network bridge
 ```
-* docker-compose.yml:
+（docker run 中默认为 bridge，docker-compose 需要指定 network_mode: "bridge"）
+* VIRTUAL_HOST
+
+```
+--label VIRTUAL_HOST=www.a.com/api;www.b.com/test
+```
+多域名使用 **;** 分隔
+
+## docker run:
+
+```
+docker run -itd --label VIRTUAL_HOST=www.a.com/api;www.b.com/test example-image
+```
+## docker-compose.yml:
 
 ```
 version: '3'
@@ -28,17 +40,18 @@ services:
     image: example-image
     network_mode: "bridge"
     labels:
-      - VIRTUAL_HOST=www.example.com/api
+      - VIRTUAL_HOST=www.a.com/api;www.b.com/test
 ```
-* 配置本地 hosts 文件:
+## 配置本地 hosts 文件:
 
 ```
 10.82.12.86 www.example.com
 ```
-* 打开浏览器访问 *www.example.com/api*
+打开浏览器访问 *www.example.com/api*
 
 ## 注意事项
-项目内请使用 **80** 端口暴露服务
-
-## todo
-* 支持多域名
+项目内请使用 **80** 端口暴露服务，如果项目内部不是 80 端口，则需要配置：
+```
+--label PORT=内部端口号
+```
+并且外部只能通过 80 端口访问到。

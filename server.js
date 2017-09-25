@@ -24,6 +24,41 @@ function getNetworks(networks) {
   }
 }
 /**
+ * 往字典里追加数据
+ * @param dict
+ * @param name
+ * @param value
+ */
+function appendDictValue(dict, name, value) {
+  if(!dict[name]){
+    dict[name] = [value];
+  }else{
+    dict[name] = dict[name].concat([value]);
+  }
+}
+function renderServer(info) {
+  return `
+server {
+  listen 80;
+  server_name ${info.host};
+  # access_log /var/log/nginx/${info.host}.access.log main;
+  {{children}}
+}
+`;
+}
+function renderLocation(info) {
+  return `
+  location ${info.path} {
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_set_header X-Forwarded-Server $host;
+    proxy_pass http://${info.ip}:${info.port}/;
+  }
+`;
+}
+/**
  * 刷新 nginx_conf_file 配置
  */
 function updateNginxConf() {
@@ -33,65 +68,57 @@ function updateNginxConf() {
     var containerMap_unserver = {};// 未启动的应用
     containers.forEach(function (containerInfo) {
       var name = containerInfo.Names[0].substr(1);
-      var virtualHost = (containerInfo.Labels.VIRTUAL_HOST || '').trim();
       var port = (containerInfo.Labels.PORT || '80').trim();
-      var indexSep = virtualHost.indexOf('/');
-      var host;
-      var path;
-      if(indexSep != -1){
-        host = virtualHost.substring(0, indexSep);
-        path = virtualHost.substring(indexSep);
-
-        if(!/\/$/.test(path)){
-          path = path + '/';
-        }
-      }else{
-        host = virtualHost;
-        path = '/';
-      }
-      // fixme path
+      var virtualHosts = (containerInfo.Labels.VIRTUAL_HOST || '').split(';'); // 多域名直接以分号分隔
       var networksInfo = getNetworks(containerInfo.NetworkSettings.Networks) || {IPAddress: ''};
       var ip = networksInfo.IPAddress;
-      if(host && ip) {
-        containerMap[name] = {host, path, ip, port};
-      }else{
-        // unserver
-        containerMap_unserver[name] = {host, path, ip, port};
-      }
+
+      virtualHosts.forEach(function (virtualHostStr) {
+        var virtualHost = virtualHostStr.trim();
+        var indexSep = virtualHost.indexOf('/');
+        var host;
+        var path;
+        if(indexSep != -1){
+          host = virtualHost.substring(0, indexSep);
+          path = virtualHost.substring(indexSep);
+
+          if(!/\/$/.test(path)){
+            path = path + '/';
+          }
+        }else{
+          host = virtualHost;
+          path = '/';
+        }
+
+        var info = {host, path, ip, port};
+        if(host && ip) {
+          appendDictValue(containerMap, name, info);
+        }else{
+          // unserver
+          appendDictValue(containerMap_unserver, name, info);
+        }
+      });
     });
+
+    // 生成 default.conf
     var serverConfigMap = {};
     Object.keys(containerMap).forEach(function (name) {
-      var info = containerMap[name];
-      if(!serverConfigMap[info.host]){
-        serverConfigMap[info.host] = {
-          text:
-            `
-server {
-  listen 80;
-  server_name ${info.host};
-  # access_log /var/log/nginx/${info.host}.access.log main;
-  {{children}}
-}
-          `,
-          children: []
-        };
-      }
-      serverConfigMap[info.host].children.push(
-        `
-  location ${info.path} {
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $remote_addr;
-    proxy_set_header Host $host;
-    proxy_set_header X-Forwarded-Host $host;
-    proxy_set_header X-Forwarded-Server $host;
-    proxy_pass http://${info.ip}:${info.port}/;
-  }
-`);
+      var infoArr = containerMap[name];
+      infoArr.forEach(function (info) {
+        if(!serverConfigMap[info.host]){
+          serverConfigMap[info.host] = {
+            text: renderServer(info),
+            children: []
+          };
+        }
+        serverConfigMap[info.host].children.push(renderLocation(info));
+      });
     });
-    var nginxConfigData = Object.keys(serverConfigMap).map(function (name) {
-      var serverInfo = serverConfigMap[name];
+    var nginxConfigData = Object.keys(serverConfigMap).map(function (host) {
+      var serverInfo = serverConfigMap[host];
       return serverInfo.text.replace('{{children}}', serverInfo.children.join('\n'));
     }).join('');
+    // end
 
     // 更新 nginx.conf 并且重启 nginx
     if(nginxConfigDataLast != nginxConfigData) {
