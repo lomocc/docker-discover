@@ -3,6 +3,9 @@
 var fs = require('fs-extra');
 var Docker = require('dockerode');
 var process = require('child_process');//直接调用命令
+var version = require('./package.json').version;
+
+console.log(`version: ${version}`);
 
 var nginx_conf_file  = '/etc/nginx/conf.d/default.conf';
 
