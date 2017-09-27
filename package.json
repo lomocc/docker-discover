@@ -3,9 +3,6 @@
   "version": "1.0.1",
   "description": "",
   "main": "server.js",
-  "directories": {
-    "start": "node server.js"
-  },
   "dependencies": {
     "debug": "^3.0.1",
     "dockerode": "^2.5.1",
@@ -13,8 +10,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC"
