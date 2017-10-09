@@ -3,6 +3,7 @@ services:
   discovery:
     image: lomocc/discovery
     container_name: discovery
+    restart: always
     privileged: true
     build: .
     ports:

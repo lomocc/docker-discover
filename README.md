@@ -9,7 +9,7 @@ Docker Web 容器转发管理
 ## 启动 Docker Discovery
 
 ```
-docker run --name discovery -itd -p 80:80 -v /var/run/docker.sock:/var/run/docker.sock:ro lomocc/discovery
+docker run --name discovery --restart always -itd -p 80:80 -v /var/run/docker.sock:/var/run/docker.sock:ro lomocc/discovery
 ```
 
 ## 参数说明
